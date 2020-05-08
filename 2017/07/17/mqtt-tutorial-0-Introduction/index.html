@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="I love Iron Man">
+    <meta name="keyword" content>
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="//buttons.github.io/buttons.js"></script>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-7727667075822568",
+      enable_page_level_ads: true
+      });
+    </script>
+
+    <!-- Matjax plugin -->
+    <!-- Matjax plugin -->
+
+
+
+    
+    <title>
+        
+          MQTT入門實作(一) - MQTT 介紹 - Beantech | 豆科技
+        
+    </title>
+
+    <link rel="canonical" href="https://beantech.org/2017/07/17/mqtt-tutorial-0-Introduction/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript">
+        var host = "//beantech.org";
+        if ((host == window.location.host) && (window.location.protocol != "https:"))
+            window.location.protocol = "https";
+    </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- hexo-inject:begin --><!-- hexo-inject:end --><!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            /*post*/
+            background-image: url('iot-dark.png')
+        
+    }
+    
+    #signature{
+        background-image: url('/img/signature/BeanTechSign-white-lite.png');
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#MQTT" title="MQTT">MQTT</a>
+                            
+                              <a class="tag" href="/tags/#IOT" title="IOT">IOT</a>
+                            
+                        </div>
+                        <h1>MQTT入門實作(一) - MQTT 介紹</h1>
+                        <h2 class="subheading">MQTT is a machine-to-machine (M2M) &quot;Internet of Things&quot; connectivity protocol.</h2>
+                        <span class="meta">
+                            Posted by Yu-Hsuan Yen on
+                            2017-07-17
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Bean Tech</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- BeanTech_Ads -->
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-7727667075822568"
+                     data-ad-slot="4556153939"
+                     data-ad-format="auto"></ins>
+                <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+                <blockquote>
+<p><a href="http://mqtt.org/" target="_blank" rel="noopener">MQTT</a>是為物聯網所設計的 M2M 通訊協定，網路頻寬與硬體需求非常少，是極為輕便的通訊協議。</p>
+</blockquote>
+<h1><span id="mqtt-基本介紹">MQTT 基本介紹</span></h1>
+<p>MQTT(Message Queuing Telemetry Transport，訊息佇列遙測傳輸)是為物聯網所設計的M2M通訊協定，其對於網路頻寬與硬體需求非常少，是極為輕便的通訊協議。<br>
+MQTT通訊協議已經在2014年經過制定電子商業標準協會(OASIS)程序，成為推薦的物聯網傳輸協議標準。其協議是基於TCP連線，提供不同QoS(Quality of Service，傳輸服務質量)層級的訊息傳遞，此技術可簡化、加速各設備間各種訊息的交流，並可確保於安全、可靠的資訊傳輸情況下完成通訊，所以我覺得MQTT有極大的潛力成為標準的物聯網通訊協議。<br>
+<img src="mqtt-logo.png" alt="MQTT Logo"><i><p align="right" style="color: gray; font-size:3px;">Source: <a href="http://mqtt.org/" target="_blank" rel="noopener">MQTT Official Website</a></p></i></p>
+<h1><span id="mqtt-特色">MQTT 特色</span></h1>
+<p>MQTT 是專為物聯網所設計的 M2M 通訊協定，其有以下特色：</p>
+<ul>
+<li>基於常用的TCP/IP連線</li>
+<li>使用<a href="#%E8%A8%8A%E6%81%AF%E5%82%B3%E9%81%9E%E5%8E%9F%E7%90%86">發佈與訂閱</a>的訊息傳送機制</li>
+<li>提供三種不同的傳送服務質量QoS(Quality of Service)</li>
+<li>訊息標頭檔大小固定為 2 Byte，減少封包傳送時的負擔，同時減少網路所需之頻寬</li>
+<li>最後遺囑(Last Will and Testament)機制，當 Publisher 和 Broker 之間發生異常斷線時，通知有訂閱此 Will Topic 的 Subscriber。</li>
+<li>主題萬用字元(Topic Wildcard Characters)在訂閱時可以使用特殊字元一次訂閱多個主題。</li>
+</ul>
+<h1><span id="訊息傳遞原理">訊息傳遞原理</span></h1>
+<p>MQTT 使用發佈(Publish)/訂閱 (Subscribe)的訊息傳送機制，此機制中包含 4 個主要的元素：</p>
+<ul>
+<li>主題(<code>Topic</code>)</li>
+<li>發佈者(<code>Publisher</code>)</li>
+<li>訊息中繼站 (<code>Broker</code>)</li>
+<li>訂閱者(<code>Subscriber</code>)</li>
+</ul>
+<p><code>Publisher</code> 為訊息的來源，傳送夾帶有 <code>Topic</code> 資訊的訊息至 <code>Broker</code>，<code>Subcriber</code>向<code>Broker</code>索取想要接受到之訊息的<code>Topic</code>。整個MQTT通訊流程架構如下圖：<br>
+<img src="pub-sub.png" alt="MQTT Pub/Sub"><br>
+舉個例來說，現在需要製作一溫度感測系統，使用MQTT的流程即從溫度感測器(<code>Publisher</code>)發送溫度訊息至中繼站(<code>Broker</code>)中Temp的佈告欄(<code>Topic</code>)上，接著透過使用筆電或手機(<code>Subscriber</code>)接收溫度訊息，整套溫度感測系統流程圖如下：<br>
+<img src="mqtt-example.jpg" alt="MQTT example"></p>
+<style>
+table th:first-of-type {
+    width: 90px;
+}
+table th:nth-of-type(2) {
+    width: 200px;
+}
+table th:nth-of-type(3) {
+    width: 200px;
+}
+table th:nth-of-type(4) {
+    width: 200px;
+}
+</style>
+<h1><span id="傳送服務質量qos">傳送服務質量QoS</span></h1>
+<p>MQTT 提供三種訊息傳送服務質量QoS(Quality of Service)，大家可以想成_訊息的重要程度_，或參考以下表格及圖片：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:left"><center>QoS 0</center></th>
+<th style="text-align:left"><center>QoS 1</center></th>
+<th style="text-align:left"><center>QoS 2</center></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><center>重要程度</center></strong></td>
+<td style="text-align:left"><center>低</center></td>
+<td style="text-align:left"><center>中</center></td>
+<td style="text-align:left"><center>高</center></td>
+</tr>
+<tr>
+<td><strong><center>定義</center></strong></td>
+<td style="text-align:left"><center>At most onoce (最多一次)</center></td>
+<td style="text-align:left"><center>At least once (至少一次)</center></td>
+<td style="text-align:left"><center>Exactly once (確保一次)</center></td>
+</tr>
+<tr>
+<td><strong><center>解釋</center></strong></td>
+<td style="text-align:left">訊息單向發送，故不保證一定會送達，可能會丟失</td>
+<td style="text-align:left">訊息發送後會確保至少得到一次回應</td>
+<td style="text-align:left">訊息發送後會等待回傳的訊號，得到該訊號後會再回傳告知已收到，利用此double check的方式嚴格確保訊息只送達一次</td>
+</tr>
+<tr>
+<td><strong><center>比喻</center></strong></td>
+<td style="text-align:left">平信</td>
+<td style="text-align:left">掛號信</td>
+<td style="text-align:left">簽收包裹</td>
+</tr>
+<tr>
+<td><strong><center>用途</center></strong></td>
+<td style="text-align:left">感測器</td>
+<td style="text-align:left">Email、早期的FB messanger</td>
+<td style="text-align:left">警報、繳費系統以及現在的FB messanger</td>
+</tr>
+</tbody>
+</table>
+<p><img src="QoS.png" alt="MQTT QoS"><i><p align="right" style="color: gray; font-size:3px;">Source: <a href="https://goo.gl/CFaUGj" target="_blank" rel="noopener">MQTT QoS</a></p></i></p>
+<p>MQTT基本的介紹到這邊，接下來的實作內容請於下一章節繼續探索摟～</p>
+<h1><span id="reference">Reference</span></h1>
+<hr>
+<ul>
+<li><a href="http://www.hivemq.com/blog/mqtt-essentials-part-1-introducing-mqtt" target="_blank" rel="noopener">HiveMQ</a></li>
+<li><a href="https://swf.com.tw/?p=1015" target="_blank" rel="noopener">超圖解物聯網IOT實作入門</a></li>
+<li><a href="http://flybilling.com/wp-content/uploads/2017/01/IoT.jpg" target="_blank" rel="noopener">Banner Image</a></li>
+</ul>
+<!-- <i><p align="right" style="color: gray; font-size:3px;">Banner Image: http://flybilling.com/wp-content/uploads/2017/01/IoT.jpg</p></i> -->
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2018/01/04/ai-journey-0-whats-ML/" data-toggle="tooltip" data-placement="top" title="悠遊AI世界(一)－認識機器學習">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/03/27/git-tutorial-2-Git-Branching/" data-toggle="tooltip" data-placement="top" title="[Git] Git Branching">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                    <div class="comment">
+                        <div id="disqus_thread" class="disqus-thread"></div>
+                    </div>
+                
+                <!-- disqus comment end -->
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    <aside id="sidebar">
+      <div id="toc" class="toc-article">
+      <strong class="toc-title">Contents</strong>
+      
+        <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#null"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">MQTT 基本介紹</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#null"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">MQTT 特色</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#null"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">訊息傳遞原理</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#null"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">傳送服務質量QoS</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#null"><span class="toc-nav-number">5.</span> <span class="toc-nav-text">Reference</span></a></li></ol>
+      
+      </div>
+    </aside>
+  
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#MQTT" title="MQTT">MQTT</a>
+                        
+                          <a class="tag" href="/tags/#IOT" title="IOT">IOT</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://beantech.org" target="_blank">Bean Tech</a></li>
+                    
+                        <li><a href="https://blog.kaijun.rocks" target="_blank">Kaijun&#39;s Blog</a></li>
+                    
+                        <li><a href="https://huangxuan.me" target="_blank">Hux Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- BeanTech_Ads -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-7727667075822568"
+     data-ad-slot="4556153939"
+     data-ad-format="auto"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<!-- disqus embedded js code start (one page only need to embed once) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "beantech-org";
+    var disqus_identifier = "https://beantech.org/2017/07/17/mqtt-tutorial-0-Introduction/";
+    var disqus_url = "https://beantech.org/2017/07/17/mqtt-tutorial-0-Introduction/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus embedded js code start end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="//www.facebook.com/YenYuHsuan">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="//github.com/YenYuHsuan">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="//www.linkedin.com/in/yu-hsuan-yen">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Yu-Hsuan Yen 2020 
+                    <br>
+                    Theme by <a href="//huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="//beantech.org">BeanTech</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="//ghbtns.com/github-btn.html?user=YenYuHsuan&repo=hexo-theme-beantech&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://beantech.org/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-93699117-1';
+    var _gaDomain = 'beantech.org';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="https://beantech.org/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work --><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</body>
+
+</html>
